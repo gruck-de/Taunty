@@ -1,0 +1,9 @@
+## Interface: 70000
+## Title: Taunty
+## Author: Gruck
+## Version: 0.1
+## Notes: Addon to inform about taunts
+## DefaultState: Enabled
+## LoadOnDemand: 0
+taunty.toc
+taunty.lua
