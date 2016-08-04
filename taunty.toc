@@ -6,5 +6,6 @@
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
 ## SavedVariables: TauntySave
-taunty.toc
+embeds.xml
+
 taunty.lua
