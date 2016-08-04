@@ -5,5 +5,6 @@
 ## Notes: Addon to inform about taunts
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
+## SavedVariables: TauntySave
 taunty.toc
 taunty.lua
