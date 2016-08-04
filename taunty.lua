@@ -23,16 +23,17 @@ function addon:sendMsg(msg)
 end
 
 function addon:SomebodyDied(unit)
-  local unitid = unit.unitid
-	local name = unit.name
-	if (unitid)
-	  if unit.isTank
-	    addon:sendMsg(L["Tank %s has died!"]:format(name));
-    elseif unit.isHeal
-      addon:sendMsg(L["Heal %s has died!"]:format(name));
-    end
-	end
-	
+  local unitid = unit.unitid;
+  local name = unit.name;
+  if (unitid) then
+  	if unit.isTank then
+  	   addon:sendMsg(L["Tank %s has died!"]:format(name));
+  	   PlaySoundFile("Sound\\interface\\igQuestFailed.ogg", "Master");
+        elseif unit.isHeal then
+           addon:sendMsg(L["Heal %s has died!"]:format(name));
+           PlaySoundFile("Sound\\Event Sounds\\Wisp\\WispPissed1.ogg", "Master");
+        end
+   end
 end
 
 function addon:COMBAT_LOG_EVENT_UNFILTERED(timestamp, subevent, hideCaster, ...)
@@ -44,19 +45,21 @@ function addon:COMBAT_LOG_EVENT_UNFILTERED(timestamp, subevent, hideCaster, ...)
   extraspellID = ...
   
   -- Check if target is player
-  local is_playerdst = bit.band(dstflags, COMBATLOG_OBJECT_TYPE_PLAYER) > 0
+  local is_playerdst = bit.band(dstflags, COMBATLOG_OBJECT_TYPE_PLAYER) > 0;
   
   -- Taunt Stuff
-  if (subevent == "SPELL_CAST_SUCCESS") and (tauntSpellNames[spellname])
+  if (subevent == "SPELL_CAST_SUCCESS") and (tauntSpellNames[spellname]) then
     print("Player taunted: " .. dstname .. (" with ") .. (spellname or "nil"));
-  elseif (subevent == "SPELL_AURA_APPLIED") and (aoetauntSpellNames[spellname])
+    PlaySoundFile("Sound\\interface\\PickUp\\PickUpMetalSmall.ogg", "Master");
+  elseif (subevent == "SPELL_AURA_APPLIED") and (aoetauntSpellNames[spellname]) then
     print("Player AOE-taunted: " .. dstname .. (" with ") .. (spellname or "nil"));
-  elseif (subevent == "SPELL_MISSED") and (tauntSpellNames[spellname] or aoetauntSpellNames[spellname]) 
-    local missType = extraspellID
+  elseif (subevent == "SPELL_MISSED") and (tauntSpellNames[spellname] or aoetauntSpellNames[spellname]) then
+    local missType = extraspellID;
     print(" Player taunt with " .. spellname .. " failed on: " .. dstname .. " - " .. missType); 
   end
   
   -- Death Stuff
-  if (subevent == "UNIT_DIED" and is_playerdst)
+  if (subevent == "UNIT_DIED" and is_playerdst) then
     addon:SomebodyDied(unit);
+  end
 end
