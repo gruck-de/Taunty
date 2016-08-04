@@ -44,18 +44,22 @@ function addon:COMBAT_LOG_EVENT_UNFILTERED(timestamp, subevent, hideCaster, ...)
   spellID, spellname, spellschool, 
   extraspellID = ...
   
+  if not subevent then
+		return
+	end
+  
   -- Check if target is player
   local is_playerdst = bit.band(dstflags, COMBATLOG_OBJECT_TYPE_PLAYER) > 0;
   
   -- Taunt Stuff
   if (subevent == "SPELL_CAST_SUCCESS") and (tauntSpellNames[spellname]) then
-    print("Player taunted: " .. dstname .. (" with ") .. (spellname or "nil"));
+    addon:sendMsg(L["%s taunted %s with %s"]:format(srcname, dstname, spellname));
     PlaySoundFile("Sound\\interface\\PickUp\\PickUpMetalSmall.ogg", "Master");
   elseif (subevent == "SPELL_AURA_APPLIED") and (aoetauntSpellNames[spellname]) then
-    print("Player AOE-taunted: " .. dstname .. (" with ") .. (spellname or "nil"));
+    addon:sendMsg(L["%s AoE-taunted %s with %s"]:format(srcname, dstname, spellname));
   elseif (subevent == "SPELL_MISSED") and (tauntSpellNames[spellname] or aoetauntSpellNames[spellname]) then
     local missType = extraspellID;
-    print(" Player taunt with " .. spellname .. " failed on: " .. dstname .. " - " .. missType); 
+    addon:sendMsg(L["%s taunt failed on %s with %s. Reason: %s"]:format(srcname, dstname, spellname, missType));
   end
   
   -- Death Stuff
