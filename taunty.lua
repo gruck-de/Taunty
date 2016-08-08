@@ -7,24 +7,26 @@ local f = CreateFrame("Frame",nil,UIParent);
 
 local playerid = UnitGUID("player");
 local playername = UnitName("player");
+local isParty = UnitInParty(playerid);
+local isRaid = UnitInRaid(playerid);
 
 
 function Taunty:OnInitialize()
   print("Taunty watching over you...");
   f:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
+  f:RegisterEvent("GROUP_ROSTER_UPDATE");
 end
 Taunty:OnInitialize();
 
 function Taunty:convertIDstoNames(spellIDs)
   local result = {};
   for i, v in ipairs(spellIDs) do
-    local spellName = GetSpellInfo(v); -- Hier könnte ein Fehler auftreten wenn es die ID nicht gibt
-	-- print(spellName .. " wurde eingetragen");
+    local spellName = GetSpellInfo(v); -- Could cause error if unknown
     result[spellName] = true;
   end
   return result
 end
--- local tauntSpellIDs = {355, 62124, 116189}; -- tbd (Warr, Pala, Monk)
+
 local tauntSpellIDs = {
   355,   -- Taunt (Warrior)
   62124, -- Hand of Reckoning (Paladin)
@@ -35,25 +37,36 @@ local tauntSpellIDs = {
   116189, -- Provoke (Monk)
   17735, -- Suffering (Warlock Voidwalker)
   171014, -- Seethe (Warlock Abyssal)
-  2649  -- Growl (Hunter Pet)
-}
+  2649,  -- Growl (Hunter Pet)
+  36213 -- Angered Earth, AoE effect but not buff
+};
 local tauntSpellNames = Taunty:convertIDstoNames(tauntSpellIDs); 
 
-local aeotauntSpellIDs = {204079}; -- AoE Taunt Spells 
+local aeotauntSpellIDs = {
+  204079 -- Paladin new AoE
+}; 
 local aeotauntSpellNames = Taunty:convertIDstoNames(aeotauntSpellIDs); 
 
 function Taunty:sendMsg(msg)
-  msg = "Taunty: " .. msg;
+  msg = "|cFFFF0000Taunty:|r " .. msg;
   print(msg);
 end
 
 function Taunty:eventHandler(event, ...)  
   if (event == "COMBAT_LOG_EVENT_UNFILTERED") then
     Taunty:COMBAT_LOG_EVENT_UNFILTERED(...);
+  elseif (event == "GROUP_ROSTER_UPDATE") then
+    Taunty:GROUP_ROSTER_UPDATE(...);
   end
 end
 f:SetScript("OnEvent", Taunty.eventHandler);
 
+
+function Taunty:GROUP_ROSTER_UPDATE(...)
+	-- not used so far..
+	isParty = UnitInParty("player");
+	isRaid = UnitInRaid("player");
+end
 
 function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...) 
   local _,subevent,_,srcGUID,srcname,srcflags,srcRaidFlags,dstGUID,dstname,dstflags,dstRaidFlags,spellID,spellname,spellschool,misstype,_,_,_,_,_ = ...
@@ -61,25 +74,32 @@ function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...)
   if not subevent then
 		return
 	end
- 
+	 
   -- Taunt Stuff 
   if (subevent == "SPELL_CAST_SUCCESS") and (tauntSpellNames[spellname]) then
-	if (srcGUID == playerid) then -- selber gespottet
+	if (srcGUID == playerid) then -- player taunt
       Taunty:sendMsg(("%s %s taunted %s with %s"):format(GetSpecializationRoleByID(GetInspectSpecialization(srcname)), srcname, dstname, GetSpellLink(spellID)));
 	  PlaySoundFile("Sound\\interface\\PickUp\\PickUpMetalSmall.ogg", "Master");	  
 	else
-	  if (UnitGUID("targettarget") == playerid) then -- hat mich im Ziel
-		Taunty:sendMsg(("%s %s ninja-taunted %s with %s"):format(GetSpecializationRoleByID(GetInspectSpecialization(srcname)), srcname, dstname, GetSpellLink(spellID)));
+	  local whatRole = GetSpecializationRoleByID(GetInspectSpecialization(srcname));
+	  if whatRole == nil then
+		whatRole = "UNKNOWN"; -- in case we don't know the role
+	  end
+	  if dstname == nil then
+		dstname = "UNKNOWN"; -- prevent error due to Earth Elemental taunt
+	  end		
+	  if (UnitGUID("targettarget") == playerid) then -- player is the target
+		Taunty:sendMsg(("%s %s ninja-taunted %s with %s"):format(whatRole, srcname, dstname, GetSpellLink(spellID)));
 	    PlaySoundFile("Sound\\Doodad\\G_NecropolisWound.ogg", "Master");
-	  else 
-	    Taunty:sendMsg(("%s %s taunted %s with %s"):format(GetSpecializationRoleByID(GetInspectSpecialization(srcname)), srcname, dstname, GetSpellLink(spellID)));
+	  else    	
+		Taunty:sendMsg(("%s %s taunted %s with %s"):format(whatRole, srcname, dstname, GetSpellLink(spellID)));
 	    PlaySoundFile("Sound\\interface\\PickUp\\PickUpMetalSmall.ogg", "Master");
 	  end
 	end
   elseif (subevent == "SPELL_AURA_APPLIED") and (aeotauntSpellNames[spellname]) then
     Taunty:sendMsg(("%s AoE-taunted %s with %s"):format(srcname, dstname, GetSpellLink(spellID)));
 	PlaySoundFile("Sound\\interface\\PickUp\\PickUpMetalSmall.ogg", "Master");
-  elseif (subevent == "SPELL_MISSED") and (tauntSpellNames[spellname] or aoetauntSpellNames[spellname]) then   
+  elseif (subevent == "SPELL_MISSED") and (tauntSpellNames[spellname] or aeotauntSpellNames[spellname]) then   
     Taunty:sendMsg(("%s taunt failed on %s with %s. Reason: %s"):format(srcname, dstname, GetSpellLink(spellID), misstype));
 	PlaySoundFile("Sound\\Spells\\SimonGame_Visual_GameFailedSmall.ogg", "Master")
   end
