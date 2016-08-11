@@ -38,7 +38,8 @@ local tauntSpellIDs = {
   17735, -- Suffering (Warlock Voidwalker)
   171014, -- Seethe (Warlock Abyssal)
   2649,  -- Growl (Hunter Pet)
-  36213 -- Angered Earth, AoE effect but not buff
+  36213, -- Angered Earth, AoE effect but not buff
+  185245 -- Torment
 };
 local tauntSpellNames = Taunty:convertIDstoNames(tauntSpellIDs); 
 
@@ -66,6 +67,8 @@ function Taunty:GROUP_ROSTER_UPDATE(...)
 	-- not used so far..
 	isParty = UnitInParty("player");
 	isRaid = UnitInRaid("player");
+	playerid = UnitGUID("player");
+    playername = UnitName("player");
 end
 
 function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...) 
@@ -82,12 +85,17 @@ function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...)
 	  PlaySoundFile("Sound\\interface\\PickUp\\PickUpMetalSmall.ogg", "Master");	  
 	else
 	  local whatRole = GetSpecializationRoleByID(GetInspectSpecialization(srcname));
+	  -- in case we don't know the role
 	  if whatRole == nil then
-		whatRole = "UNKNOWN"; -- in case we don't know the role
+		whatRole = ""; 
 	  end
+	  
+	  -- prevent error due to Earth Elemental taunt
 	  if dstname == nil then
-		dstname = "UNKNOWN"; -- prevent error due to Earth Elemental taunt
+		dstname = "UNKNOWN"; 
 	  end		
+	  playerid = UnitGUID("player");
+	  
 	  if (UnitGUID("targettarget") == playerid) then -- player is the target
 		Taunty:sendMsg(("%s %s ninja-taunted %s with %s"):format(whatRole, srcname, dstname, GetSpellLink(spellID)));
 	    PlaySoundFile("Sound\\Doodad\\G_NecropolisWound.ogg", "Master");
