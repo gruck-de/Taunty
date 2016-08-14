@@ -1,11 +1,12 @@
 ## Interface: 70000
 ## Title: Taunty
 ## Author: Gruck
-## Version: 0.1
+## Version: 0.2
 ## Notes: Addon to inform about taunts
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
-## SavedVariables: TauntySave
+## SavedVariables: TauntyConfig
 embeds.xml
+config.xml
 
 taunty.lua

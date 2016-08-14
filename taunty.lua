@@ -5,6 +5,7 @@ Taunty.L = {};
 
 local f = CreateFrame("Frame",nil,UIParent);
 
+local taunty_varsLoaded = false;
 local playerid = UnitGUID("player");
 local playername = UnitName("player");
 local isParty = UnitInParty(playerid);
@@ -77,7 +78,16 @@ function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...)
   if not subevent then
 		return
 	end
-	 
+
+  local targetid = UnitGUID("target")
+  local mytarget = true
+	--if dstGUID ~= targetid then
+		--if band(dstflags, COMBATLOG_OBJECT_CONTROL_PLAYER) > 0 then
+			--return  -- the destination is not a creature
+		--end
+		--mytarget = false
+	--end
+	
   -- Taunt Stuff 
   if (subevent == "SPELL_CAST_SUCCESS") and (tauntSpellNames[spellname]) then
 	if (srcGUID == playerid) then -- player taunt

@@ -1,0 +1,10 @@
+ <Ui ...>
+ <Frame name="TauntyConfigFrame" ...>
+ ...
+ <Scripts>
+   <OnLoad> TauntyConfigFrame_OnLoad(); </OnLoad>
+   <OnEvent> TauntyConfigFrame_OnEvent(); </OnEvent>
+   ...
+ </Scripts>
+ </Frame>
+ </Ui>
