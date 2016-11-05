@@ -134,7 +134,7 @@ function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...)
         
         
         if (srcGUID == playerid) then -- player taunt
-            Taunty:sendMsg(("%s %s taunted %s with %s"):format(GetSpecializationRoleByID(GetInspectSpecialization(srcname)), srcname, dstname, GetSpellLink(spellID)));
+            Taunty:sendMsg(("%s taunted %s with %s"):format(srcname, dstname, GetSpellLink(spellID)));
             PlaySoundFile("Sound\\interface\\PickUp\\PickUpMetalSmall.ogg", "Master");
         else
             local inScope = false;
