@@ -107,8 +107,8 @@ function Taunty:GROUP_ROSTER_UPDATE(...)
 end
 
 function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...)
-    local _, subevent, _, srcGUID, srcname, srcflags, srcRaidFlags, dstGUID, dstname, dstflags, dstRaidFlags, spellID, spellname, spellschool, misstype, _, _, _, _, _ = ...
-    
+    local _, subevent, _, srcGUID, srcname, srcflags, srcRaidFlags, dstGUID, dstname, dstflags, dstRaidFlags, spellID, spellname, spellschool, misstype, _, _, _, _, _ = ...    
+
     if not subevent then
         return
     end
@@ -167,6 +167,9 @@ function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...)
                 -- since it's not a pet, it could have a role
                 local whatRole = GetSpecializationRoleByID(GetInspectSpecialization(srcname));
                 if whatRole then
+                    -- Death Grip is only a taunt for tanks. Return if DAMAGER and Deathgrip
+                    if (whatRole == "DAMAGER") and (spellID == 49576) then return end
+
                     srcname = whatRole .. srcname;
                 end
             end
