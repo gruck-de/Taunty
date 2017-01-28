@@ -1,7 +1,7 @@
 ## Interface: 70000
 ## Title: Taunty
 ## Author: Gruck
-## Version: 0.2
+## Version: 0.3
 ## Notes: Addon to inform about taunts
 ## DefaultState: Enabled
 ## LoadOnDemand: 0

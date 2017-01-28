@@ -107,8 +107,8 @@ function Taunty:GROUP_ROSTER_UPDATE(...)
 end
 
 function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...)
-    local _, subevent, _, srcGUID, srcname, srcflags, srcRaidFlags, dstGUID, dstname, dstflags, dstRaidFlags, spellID, spellname, spellschool, misstype, _, _, _, _, _ = ...    
-
+    local _, subevent, _, srcGUID, srcname, srcflags, srcRaidFlags, dstGUID, dstname, dstflags, dstRaidFlags, spellID, spellname, spellschool, misstype, _, _, _, _, _ = ...
+    
     if not subevent then
         return
     end
@@ -132,8 +132,12 @@ function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...)
             Taunty:sendMsg(srcflags);
         end
         
-        
+        local whatRole = ""
+
         if (srcGUID == playerid) then -- player taunt
+            whatRole = GetSpecializationRoleByID(GetInspectSpecialization(srcname));
+            if (whatRole == "DAMAGER") and (spellID == 49576) then return end
+
             Taunty:sendMsg(("%s taunted %s with %s"):format(srcname, dstname, GetSpellLink(spellID)));
             PlaySoundFile("Sound\\interface\\PickUp\\PickUpMetalSmall.ogg", "Master");
         else
@@ -157,28 +161,31 @@ function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...)
             -- not in scope, so we don't want to know
             if not inScope then return end
             
-            -- check if it was a pet
+            -- check if player controlled
             if bit.band(srcflags, COMBATLOG_OBJECT_CONTROL_PLAYER) > 0 then
-                local owner = getPetOwner(srcname);
-                if owner then
-                    srcname = srcname .. " <" .. owner .. ">";
-                end
-            else
-                -- since it's not a pet, it could have a role
-                local whatRole = GetSpecializationRoleByID(GetInspectSpecialization(srcname));
-                if whatRole then
-                    -- Death Grip is only a taunt for tanks. Return if DAMAGER and Deathgrip
-                    if (whatRole == "DAMAGER") and (spellID == 49576) then return end
-
-                    srcname = whatRole .. srcname;
+                -- check if pet
+                if bit.band(srcflags, COMBATLOG_OBJECT_TYPE_PET) > 0 then
+                    local owner = getPetOwner(srcname);
+                    if owner then
+                        srcname = srcname .. " <" .. owner .. ">";
+                    end
+                else
+                    -- since it's not a pet, it could have a role
+                    whatRole = GetSpecializationRoleByID(GetInspectSpecialization(srcname));
+                    if whatRole then
+                        -- Death Grip is only a taunt for tanks. Return if DAMAGER and Deathgrip
+                        if (whatRole == "DAMAGER") and (spellID == 49576) then return end
+                        
+                        srcname = whatRole .. srcname;
+                    end
                 end
             end
-            
+
             -- prevent error due to Earth Elemental taunt
             if dstname == nil then
                 dstname = "UNKNOWN";
             end
-
+            
             playerid = UnitGUID("player");
             
             if (UnitGUID("targettarget") == playerid) then -- player is the target
