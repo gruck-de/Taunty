@@ -171,15 +171,26 @@ function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...)
                     end
                 else
                     -- since it's not a pet, it could have a role
-                    whatRole = GetSpecializationRoleByID(GetInspectSpecialization(srcname));
+                    local specID = GetInspectSpecialization(srcname);
+                    whatRole = GetSpecializationRoleByID(specID);   
+                    
+                    -- Death Grip is only a taunt for tanks. Return if DAMAGER and Deathgrip
+                    if (specID ~= 250) and (spellID == 49576) then                     
+                        inScope = false;
+                    end                                       
+                    
                     if whatRole then
-                        -- Death Grip is only a taunt for tanks. Return if DAMAGER and Deathgrip
-                        if (whatRole == "DAMAGER") and (spellID == 49576) then return end
-                        
                         srcname = whatRole .. srcname;
+                    else
+                        -- print("Rolle konnte nicht ermittelt werden für ",srcname);
                     end
                 end
             end
+
+
+            -- not in scope, so we don't want to know
+            if not inScope then return end
+
 
             -- prevent error due to Earth Elemental taunt
             if dstname == nil then
