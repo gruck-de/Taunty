@@ -180,7 +180,7 @@ function Taunty:COMBAT_LOG_EVENT_UNFILTERED(...)
                     end                                       
                     
                     if whatRole then
-                        srcname = whatRole .. srcname;
+                        -- srcname = whatRole .. srcname;
                     else
                         -- print("Rolle konnte nicht ermittelt werden für ",srcname);
                     end
